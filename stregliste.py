@@ -8,6 +8,7 @@ top_bot_margin = 3 #cm
 out_file = "Stregliste.tex"
 filename = "participants.csv"
 clean_TeX_output = True
+columns = ["First name", "Last name"]
 
 
 for i in range(1,len(sys.argv)):
@@ -21,22 +22,25 @@ for i in range(1,len(sys.argv)):
         out_file = sys.argv[i+1]
     if sys.argv[i] == "--debug":
         clean_TeX_output = False
+    if sys.argv[i] == "--names":
+        columns = sys.argv[i+1].split(";")
     if sys.argv[i] == "--help":
-        print("Stregliste.py -f <filename> -h <headers> -m <top_bot_margin> -o <out_file>")
+        print("Stregliste.py -f <filename> -h <headers> -m <top_bot_margin> -o <out_file> [--debug] [--names <names>]")
         print("<filename> - Name of csv file with participants")
         print("\tMust contain columns 'First name' and 'Last name'")
         print("<headers> - Names of headers separated by semicolon")
+        print("<names> - Names of columns containing names separated by semicolon")
         sys.exit()
 
 try:
-    participants = pd.read_csv(filename).sort_values(by="First name")[["First name", "Last name"]]
+    participants = pd.read_csv(filename).sort_values(by=columns[0])[columns]
 except (FileNotFoundError, KeyError):
     print("Error:")
     print("No csv file with names of participants found.")
-    print("Or the csv file does not contain columns 'First name' and 'Last name'.")
+    print("Or the csv file does not contain columns: " + ", ".join(columns))
     sys.exit()
 
-
+print(participants)
 no_cols = len(headers)
 row_height = 1.5 #cm
 no_rows=10
@@ -50,7 +54,8 @@ def clean_file():
         TeXfile.write("")
 
 def print_participant(row):
-    add_to_file("\\newline ".join(f"{row['First name']+ ' ' +row['Last name']}".split(" "))+f"\\vspace*{{{row_height} cm}}" + "&"*(no_cols) + "\\\\ \\hline")
+    names = [str(name) for name in row[columns].tolist()]
+    add_to_file("\\newline ".join(names)+f"\\vspace*{{{row_height} cm}}" + "&"*(no_cols) + "\\\\ \\hline")
 
 
 def print_table(headers,participants,ind):
@@ -62,6 +67,7 @@ def print_table(headers,participants,ind):
         print_participant(participants.iloc[i])
     add_to_file("\\hline")
     add_to_file("\\end{tabular}")
+    add_to_file(r"\newpage")
     add_to_file("")
 
 
