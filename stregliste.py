@@ -40,17 +40,16 @@ except (FileNotFoundError, KeyError):
     print("Or the csv file does not contain columns: " + ", ".join(columns))
     sys.exit()
 
-print(participants)
 no_cols = len(headers)
 row_height = 1.5 #cm
 no_rows=10
 
 def add_to_file(string):
-    with open(out_file, "a") as TeXfile:
+    with open(out_file, "a", encoding="utf-8") as TeXfile:
         TeXfile.write(string+"\n")
 
 def clean_file():
-    with open(out_file, "w") as TeXfile:
+    with open(out_file, "w", encoding="utf-8") as TeXfile:
         TeXfile.write("")
 
 def print_participant(row):
@@ -96,10 +95,10 @@ def main():
 
     #Run latex
     if clean_TeX_output:
-        os.system("pdflatex " + out_file + " > /dev/null")
-        os.system("rm " + out_file.replace(".tex",".log"))
-        os.system("rm " + out_file.replace(".tex",".aux"))
-        os.system("rm " + out_file)
+        os.system("pdflatex -interaction=batchmode " + out_file)
+        os.remove(out_file.replace(".tex",".log"))
+        os.remove(out_file.replace(".tex",".aux"))
+        os.remove(out_file)
     else:
         os.system("pdflatex " + out_file)
     print("Stregliste created at " + out_file.replace(".tex",".pdf"))
